@@ -2,6 +2,9 @@
  * Adam Thompson Portfolio
  * Main JavaScript
  */
+// Define salt and pre-hashed password (near the top of your file)
+const SITE_SALT = 'adamthompson2025'; 
+const ADMIN_HASH = 'cbd750afee7b079b3944e97c1782812d94fd9059f436d65a174072900c65a8c9';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Mobile menu toggle
@@ -302,10 +305,6 @@ function showAdminLoginModal() {
     // Show the modal
     document.getElementById('admin-modal').style.display = 'block';
 }
-
-// Define salt and pre-hashed password (near the top of your file)
-const SITE_SALT = 'adamthompson2025'; 
-const ADMIN_HASH = '58b5444cf1b6253a4317fe12daff411a78bda0a95279b1d5768ebf5ca60399a7';
 
 // Updated validation function
 function validateAdminLogin() {
