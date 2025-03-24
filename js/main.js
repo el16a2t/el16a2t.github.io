@@ -190,8 +190,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check element visibility on load and scroll
     window.addEventListener('load', checkVisibility);
     window.addEventListener('scroll', checkVisibility);
-    
-    // Admin mode trigger
+
+    // Add project modal styles
+    addProjectModalStyles();
+});
+
+// Admin mode functionality
+document.addEventListener('DOMContentLoaded', function() {
     const adminTrigger = document.getElementById('admin-trigger');
     
     if (adminTrigger) {
@@ -199,9 +204,59 @@ document.addEventListener('DOMContentLoaded', function() {
             showAdminLoginModal();
         });
     }
+    
+    // Check if we're on the projects page
+    const projectsGrid = document.getElementById('projects-grid');
+    
+    if (projectsGrid && isAdminMode()) {
+        // Show admin mode indicator
+        const adminIndicator = document.createElement('div');
+        adminIndicator.className = 'admin-mode-indicator';
+        adminIndicator.innerHTML = `
+            <span>Admin Mode</span>
+            <button id="admin-logout">Exit</button>
+        `;
+        document.body.appendChild(adminIndicator);
+        
+        // Add logout functionality
+        document.getElementById('admin-logout').addEventListener('click', function() {
+            sessionStorage.removeItem('adminMode');
+            location.reload();
+        });
+        
+        // Add "New Project" button
+        const projectsHeader = document.querySelector('.projects-header');
+        const newProjectBtn = document.createElement('button');
+        newProjectBtn.className = 'btn btn-new-project';
+        newProjectBtn.textContent = 'Add New Project';
+        newProjectBtn.style.marginTop = '20px';
+        projectsHeader.appendChild(newProjectBtn);
+        
+        // Add edit buttons to each project card
+        const projectCards = document.querySelectorAll('.project-card');
+        projectCards.forEach(card => {
+            const editBtn = document.createElement('button');
+            editBtn.className = 'project-edit-btn';
+            editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+            card.appendChild(editBtn);
+            
+            // Add edit event listener
+            editBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const projectId = card.getAttribute('data-id');
+                editProject(projectId);
+            });
+        });
+        
+        // New Project button event listener
+        newProjectBtn.addEventListener('click', function() {
+            createNewProject();
+        });
+    }
 });
 
-// Admin functionality
+// Function to show admin login modal
 function showAdminLoginModal() {
     // Create modal elements if they don't exist
     if (!document.getElementById('admin-modal')) {
@@ -248,6 +303,7 @@ function showAdminLoginModal() {
     document.getElementById('admin-modal').style.display = 'block';
 }
 
+// Function to validate admin login
 function validateAdminLogin() {
     const passwordInput = document.getElementById('admin-password');
     const errorMsg = document.getElementById('admin-error');
@@ -268,8 +324,415 @@ function validateAdminLogin() {
     }
 }
 
+// Function to check if user is in admin mode
 function isAdminMode() {
     return sessionStorage.getItem('adminMode') === 'active';
+}
+
+// Add project modal styles
+function addProjectModalStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .admin-modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+        }
+        
+        .admin-modal-content {
+            background-color: white;
+            margin: 5vh auto;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .project-modal-content {
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .admin-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .admin-modal-content h3 {
+            margin-bottom: 20px;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        
+        .admin-form label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .admin-password {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid var(--medium-gray);
+            font-size: 16px;
+        }
+        
+        .admin-login-btn {
+            background-color: var(--black);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .admin-login-btn:hover {
+            opacity: 0.8;
+        }
+        
+        .admin-error {
+            color: #d32f2f;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        .admin-mode-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--black);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .admin-mode-indicator button {
+            background: none;
+            border: none;
+            color: white;
+            text-decoration: underline;
+            cursor: pointer;
+            padding: 0;
+            font-size: 14px;
+        }
+        
+        .project-form .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .project-form .form-textarea {
+            min-height: 120px;
+        }
+        
+        .project-edit-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            opacity: 0.7;
+            transition: var(--transition);
+        }
+        
+        .project-edit-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        
+        .btn-new-project {
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        .delete-btn {
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .delete-btn:hover {
+            opacity: 0.8;
+        }
+        
+        .submit-btn {
+            position: sticky;
+            bottom: 0;
+            background-color: var(--black);
+            margin-top: 20px;
+        }
+        
+        .project-form {
+            padding-bottom: 20px;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Function to create new project
+function createNewProject() {
+    showProjectModal('new');
+}
+
+// Function to show project edit form
+function editProject(projectId) {
+    const projects = getProjectsData();
+    const project = projects.find(p => p.id.toString() === projectId.toString());
+    
+    if (project) {
+        showProjectModal('edit', project);
+    } else {
+        alert('Project not found');
+    }
+}
+
+// Function to show project edit/create modal
+function showProjectModal(mode, projectData = {}) {
+    // Remove any existing modal
+    const existingModal = document.getElementById('project-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Create modal
+    const modal = document.createElement('div');
+    modal.id = 'project-modal';
+    modal.className = 'admin-modal';
+    
+    // Prepare modal content based on mode (edit or new)
+    const title = mode === 'edit' ? 'Edit Project' : 'New Project';
+    const submitBtnText = mode === 'edit' ? 'Update Project' : 'Create Project';
+    
+    modal.innerHTML = `
+        <div class="admin-modal-content project-modal-content">
+            <span class="admin-modal-close">&times;</span>
+            <h3>${title}</h3>
+            <form id="project-form" class="project-form">
+                <div class="form-group">
+                    <label for="project-title">Project Title</label>
+                    <input type="text" id="project-title" class="form-input" value="${projectData.title || ''}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="project-tags">Tags (comma separated)</label>
+                    <input type="text" id="project-tags" class="form-input" value="${projectData.tags || ''}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="project-image">Image URL</label>
+                    <input type="text" id="project-image" class="form-input" value="${projectData.image || ''}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="project-description">Short Description</label>
+                    <textarea id="project-description" class="form-textarea">${projectData.description || ''}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="project-content">Full Content (HTML)</label>
+                    <textarea id="project-content" class="form-textarea" rows="10">${projectData.content || ''}</textarea>
+                </div>
+                
+                <input type="hidden" id="project-id" value="${projectData.id || ''}">
+                
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">${submitBtnText}</button>
+                    ${mode === 'edit' ? '<button type="button" id="delete-project-btn" class="delete-btn">Delete Project</button>' : ''}
+                </div>
+            </form>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Add event listener for close button
+    const closeBtn = modal.querySelector('.admin-modal-close');
+    closeBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+    
+    // Add event listener for form submission
+    const projectForm = document.getElementById('project-form');
+    projectForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (mode === 'edit') {
+            saveProjectChanges();
+        } else {
+            saveNewProject();
+        }
+    });
+    
+    // Add event listener for delete button if in edit mode
+    if (mode === 'edit') {
+        const deleteBtn = document.getElementById('delete-project-btn');
+        deleteBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            if (confirm('Are you sure you want to delete this project? This cannot be undone.')) {
+                deleteProject(projectData.id);
+            }
+        });
+    }
+    
+    // Show the modal
+    modal.style.display = 'block';
+}
+
+// Function to save a new project
+function saveNewProject() {
+    const projectTitle = document.getElementById('project-title').value;
+    const projectTags = document.getElementById('project-tags').value;
+    const projectImage = document.getElementById('project-image').value;
+    const projectDescription = document.getElementById('project-description').value;
+    const projectContent = document.getElementById('project-content').value;
+    
+    if (!projectTitle || !projectTags || !projectImage) {
+        alert('Please fill out all required fields');
+        return;
+    }
+    
+    // Get projects and generate a new ID
+    const projects = getProjectsData();
+    const newId = projects.length > 0 ? Math.max(...projects.map(p => parseInt(p.id))) + 1 : 1;
+    
+    // Create new project object
+    const newProject = {
+        id: newId.toString(),
+        title: projectTitle,
+        tags: projectTags,
+        image: projectImage,
+        description: projectDescription,
+        content: projectContent,
+        created: new Date().toISOString()
+    };
+    
+    // Add to projects array
+    projects.push(newProject);
+    
+    // Save to localStorage
+    saveProjectsData(projects);
+    
+    // Close modal
+    document.getElementById('project-modal').style.display = 'none';
+    
+    // Reload projects
+    loadProjects();
+    
+    // Show success message
+    alert('Project created successfully!');
+}
+
+// Function to save changes to an existing project
+function saveProjectChanges() {
+    const projectId = document.getElementById('project-id').value;
+    const projectTitle = document.getElementById('project-title').value;
+    const projectTags = document.getElementById('project-tags').value;
+    const projectImage = document.getElementById('project-image').value;
+    const projectDescription = document.getElementById('project-description').value;
+    const projectContent = document.getElementById('project-content').value;
+    
+    if (!projectTitle || !projectTags || !projectImage) {
+        alert('Please fill out all required fields');
+        return;
+    }
+    
+    // Get all projects
+    const projects = getProjectsData();
+    
+    // Find the project to update
+    const projectIndex = projects.findIndex(p => p.id.toString() === projectId.toString());
+    
+    if (projectIndex === -1) {
+        alert('Project not found');
+        return;
+    }
+    
+    // Update project data
+    projects[projectIndex] = {
+        ...projects[projectIndex],
+        title: projectTitle,
+        tags: projectTags,
+        image: projectImage,
+        description: projectDescription,
+        content: projectContent,
+        updated: new Date().toISOString()
+    };
+    
+    // Save to localStorage
+    saveProjectsData(projects);
+    
+    // Close modal
+    document.getElementById('project-modal').style.display = 'none';
+    
+    // Reload projects
+    loadProjects();
+    
+    // Show success message
+    alert('Project updated successfully!');
+}
+
+// Function to delete a project
+function deleteProject(projectId) {
+    // Get all projects
+    const projects = getProjectsData();
+    
+    // Filter out the project to delete
+    const updatedProjects = projects.filter(p => p.id.toString() !== projectId.toString());
+    
+    // Save to localStorage
+    saveProjectsData(updatedProjects);
+    
+    // Close modal
+    document.getElementById('project-modal').style.display = 'none';
+    
+    // Reload projects
+    loadProjects();
+    
+    // Show success message
+    alert('Project deleted successfully!');
 }
 
 // Data storage functions
