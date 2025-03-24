@@ -744,3 +744,216 @@ function getProjectsData() {
 function saveProjectsData(projects) {
     localStorage.setItem('portfolioProjects', JSON.stringify(projects));
 }
+// Add this function to main.js
+function loadProjects() {
+    const projectsGrid = document.getElementById('projects-grid');
+    if (!projectsGrid) return;
+    
+    const projects = getProjectsData();
+    
+    // Clear the grid
+    projectsGrid.innerHTML = '';
+    
+    // If no projects, show a message
+    if (projects.length === 0) {
+        projectsGrid.innerHTML = '<div style="text-align: center; padding: 50px;">No projects found. Add your first project!</div>';
+        return;
+    }
+    
+    // Add each project to the grid
+    projects.forEach(project => {
+        // Convert tags string to data-tags attribute format
+        const tagsList = project.tags.split(',').map(tag => tag.trim().toLowerCase()).join(',');
+        
+        const projectHTML = `
+            <div class="project-card" data-tags="${tagsList}" data-id="${project.id}">
+                <a href="javascript:void(0)" onclick="viewProject(${project.id})" class="project-link">
+                    <div class="project-image">
+                        <img src="${project.image || 'images/placeholder.jpg'}" alt="${project.title}">
+                    </div>
+                    <div class="project-info">
+                        <h3 class="project-title">${project.title}</h3>
+                        <p class="project-tags">${project.tags}</p>
+                    </div>
+                </a>
+                ${isAdminMode() ? '<button class="project-edit-btn"><i class="fas fa-edit"></i></button>' : ''}
+            </div>
+        `;
+        
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = projectHTML;
+        const projectCard = tempDiv.firstElementChild;
+        
+        // Add edit button event listener if in admin mode
+        if (isAdminMode()) {
+            const editBtn = projectCard.querySelector('.project-edit-btn');
+            editBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                editProject(project.id);
+            });
+        }
+        
+        projectsGrid.appendChild(projectCard);
+    });
+    
+    // Reinitialize project filters
+    initializeFilters();
+}
+
+// Add function to view a project
+function viewProject(projectId) {
+    const projects = getProjectsData();
+    const project = projects.find(p => p.id.toString() === projectId.toString());
+    
+    if (!project) {
+        alert('Project not found');
+        return;
+    }
+    
+    // Store current view in session
+    sessionStorage.setItem('currentProject', JSON.stringify(project));
+    
+    // Navigate to project view page
+    window.location.href = 'view-project.html';
+}
+
+// Modified saveNewProject function to make image optional
+function saveNewProject() {
+    const projectTitle = document.getElementById('project-title').value;
+    const projectTags = document.getElementById('project-tags').value;
+    const projectImage = document.getElementById('project-image').value;
+    const projectDescription = document.getElementById('project-description').value;
+    const projectContent = document.getElementById('project-content').value;
+    
+    if (!projectTitle || !projectTags) {
+        alert('Please fill out all required fields');
+        return;
+    }
+    
+    // Get projects and generate a new ID
+    const projects = getProjectsData();
+    const newId = projects.length > 0 ? Math.max(...projects.map(p => parseInt(p.id))) + 1 : 1;
+    
+    // Create new project object
+    const newProject = {
+        id: newId.toString(),
+        title: projectTitle,
+        tags: projectTags,
+        image: projectImage, // This is now optional
+        description: projectDescription,
+        content: projectContent,
+        created: new Date().toISOString()
+    };
+    
+    // Add to projects array
+    projects.push(newProject);
+    
+    // Save to localStorage
+    saveProjectsData(projects);
+    
+    // Close modal
+    document.getElementById('project-modal').style.display = 'none';
+    
+    // Reload projects
+    loadProjects();
+    
+    // Show success message
+    alert('Project created successfully!');
+}
+
+// Initialize filters after projects are loaded
+function initializeFilters() {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const projectCards = document.querySelectorAll('.project-card');
+    
+    if (filterBtns.length > 0) {
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterBtns.forEach(b => b.classList.remove('active'));
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                const filter = this.getAttribute('data-filter');
+                
+                // Filter projects
+                projectCards.forEach(card => {
+                    const tags = card.getAttribute('data-tags');
+                    
+                    if (filter === 'all' || tags.includes(filter)) {
+                        card.style.display = 'block';
+                        setTimeout(() => {
+                            card.style.opacity = '1';
+                            card.style.transform = 'translateY(0)';
+                        }, 10);
+                    } else {
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateY(20px)';
+                        setTimeout(() => {
+                            card.style.display = 'none';
+                        }, 300);
+                    }
+                });
+            });
+        });
+    }
+}
+
+// Add initialization to load projects on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if we're on the projects page
+    const projectsGrid = document.getElementById('projects-grid');
+    if (projectsGrid) {
+        loadProjects();
+    }
+    
+    // Check if we're on the view-project page
+    const projectContainer = document.getElementById('project-container');
+    if (projectContainer) {
+        loadProjectDetails();
+    }
+});
+
+// Function to load project details on view-project.html
+function loadProjectDetails() {
+    const projectJson = sessionStorage.getItem('currentProject');
+    
+    if (!projectJson) {
+        window.location.href = 'projects.html';
+        return;
+    }
+    
+    const project = JSON.parse(projectJson);
+    const container = document.getElementById('project-container');
+    
+    // Set page title
+    document.title = `${project.title} | Adam Thompson`;
+    
+    // Populate project content
+    container.innerHTML = `
+        <h1 class="project-title">${project.title}</h1>
+        <div class="project-meta">
+            <div class="project-tags">${project.tags}</div>
+        </div>
+        
+        ${project.image ? `
+        <div class="project-main-image">
+            <img src="${project.image}" alt="${project.title}">
+        </div>
+        ` : ''}
+        
+        <div class="project-description">
+            ${project.description || ''}
+        </div>
+        
+        <div class="project-full-content">
+            ${project.content || ''}
+        </div>
+        
+        <div class="project-nav">
+            <a href="projects.html" class="btn">&larr; Back to Projects</a>
+        </div>
+    `;
+}
