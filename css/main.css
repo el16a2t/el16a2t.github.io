@@ -847,3 +847,67 @@ h1, h2, h3, h4 {
     padding: 0;
     font-size: 14px;
 }
+/* Project admin styles */
+.project-edit-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    opacity: 0.7;
+    transition: var(--transition);
+}
+
+.project-edit-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.btn-new-project {
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.delete-btn {
+    background-color: #d32f2f;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.delete-btn:hover {
+    opacity: 0.8;
+}
+
+.error-message {
+    text-align: center;
+    padding: 50px 0;
+}
+
+.no-projects {
+    text-align: center;
+    padding: 50px 0;
+    font-size: 1.2rem;
+    color: var(--dark-gray);
+}

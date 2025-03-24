@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projects | Adam Thompson</title>
+    <title>Project | Adam Thompson</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,32 +34,11 @@
         </div>
     </header>
 
-    <!-- Projects Header -->
-    <section class="projects" style="padding-top: 150px;">
-        <div class="container">
-            <div class="projects-header">
-                <h2 class="projects-title">Projects</h2>
-                <p class="projects-description">A collection of my work across digital strategy, user experience design, and brand development.</p>
-            </div>
-            
-            <!-- Search Projects -->
-            <div class="search-container">
-                <input type="text" id="project-search" class="search-input" placeholder="Search projects...">
-            </div>
-            
-            <!-- Project Filters -->
-            <div class="projects-filter">
-                <button class="filter-btn active" data-filter="all">All</button>
-                <button class="filter-btn" data-filter="strategy">Strategy</button>
-                <button class="filter-btn" data-filter="ux">UX/UI</button>
-                <button class="filter-btn" data-filter="branding">Branding</button>
-                <button class="filter-btn" data-filter="ecommerce">E-commerce</button>
-            </div>
-            
-            <!-- Projects Grid -->
-            <div class="projects-grid" id="projects-grid">
-            <!-- Projects will be loaded dynamically -->
-            </div>
+    <!-- Project Content -->
+    <section class="project-content" style="padding-top: 150px;">
+        <div class="container" id="project-container">
+            <!-- Project content will be loaded dynamically -->
+            <div class="loading-indicator">Loading project...</div>
         </div>
     </section>
 
@@ -105,6 +84,6 @@
 
     <!-- Scripts -->
     <script src="js/main.js"></script>
-    <script src="js/projects-loader.js"></script>
+    <script src="js/project-loader.js"></script>
 </body>
 </html>
