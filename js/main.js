@@ -70,17 +70,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Projects search
+// Projects search
+document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('project-search');
     
     if (searchInput) {
         searchInput.addEventListener('input', function() {
             const searchValue = this.value.toLowerCase().trim();
+            const projectCards = document.querySelectorAll('.project-card');
             
             projectCards.forEach(card => {
                 const title = card.querySelector('.project-title').textContent.toLowerCase();
                 const tags = card.getAttribute('data-tags').toLowerCase();
+                const description = card.querySelector('.project-description')
+                    ? card.querySelector('.project-description').textContent.toLowerCase()
+                    : '';
                 
-                if (title.includes(searchValue) || tags.includes(searchValue)) {
+                if (title.includes(searchValue) || 
+                    tags.includes(searchValue) || 
+                    description.includes(searchValue)) {
                     card.style.display = 'block';
                     setTimeout(() => {
                         card.style.opacity = '1';
@@ -96,6 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+});
     
     // Form validation
     const contactForm = document.getElementById('contact-form');
@@ -772,20 +781,25 @@ function loadProjects() {
         // Convert tags string to data-tags attribute format
         const tagsList = project.tags.split(',').map(tag => tag.trim().toLowerCase()).join(',');
         
+        // Update in the loadProjects function, replace how tags are displayed
         const projectHTML = `
-            <div class="project-card" data-tags="${tagsList}" data-id="${project.id}">
-                <a href="javascript:void(0)" onclick="viewProject(${project.id})" class="project-link">
-                    <div class="project-image">
-                        <img src="${project.image || 'images/placeholder.jpg'}" alt="${project.title}">
+        <div class="project-card" data-tags="${tagsList}" data-id="${project.id}">
+            <a href="javascript:void(0)" onclick="viewProject(${project.id})" class="project-link">
+                <div class="project-image">
+                <img src="${project.image || 'images/placeholder.jpg'}" alt="${project.title}">
+                </div>
+                <div class="project-info">
+                    <h3 class="project-title">${project.title}</h3>
+                    <div class="project-tags-container">
+                    ${project.tags.split(',').map(tag => 
+                    `<span class="project-tag">${tag.trim()}</span>`
+                    ).join('')}
                     </div>
-                    <div class="project-info">
-                        <h3 class="project-title">${project.title}</h3>
-                        <p class="project-tags">${project.tags}</p>
-                    </div>
-                </a>
-                ${isAdminMode() ? '<button class="project-edit-btn"><i class="fas fa-edit"></i></button>' : ''}
-            </div>
-        `;
+                </div>
+            </a>
+            ${isAdminMode() ? '<button class="project-edit-btn"><i class="fas fa-edit"></i></button>' : ''}
+        </div>
+`;
         
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = projectHTML;
@@ -939,28 +953,32 @@ function loadProjectDetails() {
     document.title = `${project.title} | Adam Thompson`;
     
     // Populate project content
-    container.innerHTML = `
-        <h1 class="project-title">${project.title}</h1>
-        <div class="project-meta">
-            <div class="project-tags">${project.tags}</div>
-        </div>
-        
-        ${project.image ? `
-        <div class="project-main-image">
-            <img src="${project.image}" alt="${project.title}">
-        </div>
-        ` : ''}
-        
-        <div class="project-description">
-            ${project.description || ''}
-        </div>
-        
-        <div class="project-full-content">
-            ${project.content || ''}
-        </div>
-        
-        <div class="project-nav">
-            <a href="projects.html" class="btn">&larr; Back to Projects</a>
-        </div>
-    `;
+container.innerHTML = `
+<h1 class="project-title">${project.title}</h1>
+<div class="project-meta">
+    <div class="project-tags">
+        ${project.tags.split(',').map(tag => 
+            `<span class="project-tag">${tag.trim()}</span>`
+        ).join('')}
+    </div>
+</div>
+
+${project.image ? `
+<div class="project-main-image">
+    <img src="${project.image}" alt="${project.title}">
+</div>
+` : ''}
+
+<div class="project-description">
+    ${project.description || ''}
+</div>
+
+<div class="project-full-content">
+    ${project.content || ''}
+</div>
+
+<div class="project-nav">
+    <a href="projects.html" class="btn">&larr; Back to Projects</a>
+</div>
+`;
 }
