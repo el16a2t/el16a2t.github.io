@@ -303,13 +303,21 @@ function showAdminLoginModal() {
     document.getElementById('admin-modal').style.display = 'block';
 }
 
-// Function to validate admin login
+// Define salt and pre-hashed password (near the top of your file)
+const SITE_SALT = 'adamthompson2025'; 
+const ADMIN_HASH = '58b5444cf1b6253a4317fe12daff411a78bda0a95279b1d5768ebf5ca60399a7';
+
+// Updated validation function
 function validateAdminLogin() {
     const passwordInput = document.getElementById('admin-password');
     const errorMsg = document.getElementById('admin-error');
     
-    // Simple password check - you should change 'adminpass' to your preferred password
-    if (passwordInput.value === 'adminpass') {
+    // Hash the entered password with the salt
+    const saltedPassword = passwordInput.value + SITE_SALT;
+    const hashedInput = CryptoJS.SHA256(saltedPassword).toString();
+    
+    // Compare the hashed input with the stored hash
+    if (hashedInput === ADMIN_HASH) {
         // Set admin session
         sessionStorage.setItem('adminMode', 'active');
         
