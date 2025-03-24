@@ -922,12 +922,13 @@ function initializeFilters() {
     }
 }
 
-// Add initialization to load projects on page load
+// Add to your existing DOMContentLoaded events
 document.addEventListener('DOMContentLoaded', function() {
     // Check if we're on the projects page
     const projectsGrid = document.getElementById('projects-grid');
     if (projectsGrid) {
-        loadProjects();
+        // First try to load from the remote JSON file
+        loadProjectsFromJSON('projects.json');
     }
     
     // Check if we're on the view-project page
@@ -981,4 +982,82 @@ ${project.image ? `
     <a href="projects.html" class="btn">&larr; Back to Projects</a>
 </div>
 `;
+}
+// Add export/import functions to main.js
+function exportProjectsToJSON() {
+    const projects = getProjectsData();
+    const dataStr = JSON.stringify(projects, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = 'projects.json';
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+}
+
+// Function to load projects from external JSON
+function loadProjectsFromJSON(url) {
+    fetch(url + '?t=' + new Date().getTime()) // Add cache-busting parameter
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Save fetched projects to localStorage
+            saveProjectsData(data);
+            // Reload projects display
+            loadProjects();
+        })
+        .catch(error => {
+            console.log('Error loading projects.json, falling back to localStorage:', error);
+            // If fetch fails, just load from localStorage
+            loadProjects();
+        });
+}
+// Update the addAdminControls function
+function addAdminControls() {
+    // Show admin mode indicator
+    const adminIndicator = document.createElement('div');
+    adminIndicator.className = 'admin-mode-indicator';
+    adminIndicator.innerHTML = `
+        <span>Admin Mode</span>
+        <button id="admin-logout">Exit</button>
+    `;
+    document.body.appendChild(adminIndicator);
+    
+    // Add logout functionality
+    document.getElementById('admin-logout').addEventListener('click', function() {
+        sessionStorage.removeItem('adminMode');
+        location.reload();
+    });
+    
+    // Add "New Project" button
+    const projectsHeader = document.querySelector('.projects-header');
+    const newProjectBtn = document.createElement('button');
+    newProjectBtn.className = 'btn btn-new-project';
+    newProjectBtn.textContent = 'Add New Project';
+    newProjectBtn.style.marginTop = '20px';
+    projectsHeader.appendChild(newProjectBtn);
+    
+    // Add "Export Projects" button
+    const exportBtn = document.createElement('button');
+    exportBtn.className = 'btn btn-export-projects';
+    exportBtn.textContent = 'Export Projects';
+    exportBtn.style.marginTop = '20px';
+    exportBtn.style.marginLeft = '10px';
+    projectsHeader.appendChild(exportBtn);
+    
+    // New Project button event listener
+    newProjectBtn.addEventListener('click', function() {
+        showProjectModal('new');
+    });
+    
+    // Export Projects button event listener
+    exportBtn.addEventListener('click', function() {
+        exportProjectsToJSON();
+    });
 }
