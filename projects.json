@@ -34,5 +34,14 @@
     "description": "I went and took pictures of meej",
     "content": "",
     "created": "2025-03-24T11:07:57.210Z"
+  },
+  {
+    "id": "5",
+    "title": "Getting out of GoDaddy's clutches",
+    "tags": "Development, Web Development",
+    "image": "",
+    "description": "GoDaddy wanted to charge me £150 a year for a simple portfolio website. Time to make my own from scratch...",
+    "content": "",
+    "created": "2025-03-25T08:09:36.866Z"
   }
 ]
