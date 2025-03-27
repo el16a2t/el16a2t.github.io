@@ -1,47 +1,49 @@
 [
   {
-    "id": "1",
-    "title": "Digital Transformation",
-    "tags": "Strategy, E-commerce, UX Design",
-    "image": "images/project1.jpg",
-    "description": "Led a complete digital overhaul for a national retail chain.",
-    "content": "<p>Led a complete digital overhaul for a national retail chain, including e-commerce platform, loyalty program, and in-store digital experience. Resulted in 43% increase in online sales.</p>",
-    "created": "2023-01-15T12:00:00.000Z"
-  },
-  {
-    "id": "2",
-    "title": "Financial App Redesign",
-    "tags": "UX/UI, Fintech, Mobile",
-    "image": "images/project2.jpg",
-    "description": "Redesigned user experience for a financial services application.",
-    "content": "<p>Redesigned user experience for a financial services application, simplifying complex workflows and improving user satisfaction scores by 28%.</p>",
-    "created": "2023-02-20T12:00:00.000Z"
-  },
-  {
-    "id": "3",
-    "title": "Tech Startup Brand Identity",
-    "tags": "Branding, Strategy, Startup",
-    "image": "images/project3.jpg",
-    "description": "Developed comprehensive brand identity for an emerging tech startup.",
-    "content": "<p>Developed comprehensive brand identity and digital strategy for an emerging tech startup, helping secure Series A funding and establishing market presence.</p>",
-    "created": "2023-03-10T12:00:00.000Z"
-  },
-  {
-    "id": "4",
-    "title": "Took pictures of Maia's cat",
-    "tags": "Photography",
-    "image": "project4.jpg",
-    "description": "I went and took pictures of meej",
-    "content": "",
-    "created": "2025-03-24T11:07:57.210Z"
-  },
-  {
     "id": "5",
     "title": "Getting out of GoDaddy's clutches",
-    "tags": "Development, Web Development",
+    "tags": "Development, Web Development, UI/UX",
     "image": "",
     "description": "GoDaddy wanted to charge me £150 a year for a simple portfolio website. Time to make my own from scratch...",
+    "content": "<p><strong style=\"font-family: Helvetica; font-size: 18px;\">The Problem:</strong></p><p><span style=\"font-family: Helvetica; font-size: 18px;\">GoDaddy wanted to charge me an amount that seems obscene for the simple personal website I was maintaining</span></p><p><br></p><p><strong style=\"font-family: Helvetica; font-size: 18px;\">The Solution…?</strong></p><p><span style=\"font-family: Helvetica; font-size: 18px;\">I thought, I reckon I can do that myself for free.&nbsp;</span></p><p><br></p><p><span style=\"font-family: Helvetica; font-size: 14px;\">If you want a website in 2025 and know nothing about making or maintaining a website, you probably think you're limited to whatever offer Wix, Squarespace or GoDaddy have for you.</span></p><p><br></p><p><span style=\"font-family: Helvetica; font-size: 14px;\">The first website I tried to create was in 2018 and after gifting Wordpress £50 I'd never see again and a few hours of tinkering it was a barely usable mess and I was no closer to the website I'd envisioned in the days leading up to that decision. I hadn't spent that much time trying to get it right, but it was a sore point that I couldn't nail it immediately nonetheless, particularly as an engineering student who spent all day coding robots. “How hard should it be to make a simple website? Everyone has one! They’re everywhere… etc etc”</span></p><p><br></p><p><span style=\"font-family: Helvetica; font-size: 14px;\">In the years that followed that first attempt I just paid GoDaddy for the privilege of hosting my own basic portfolio website and this was an arrangement that worked well. I was earning a salary and was happy enough to forget about however much they were billing me to keep my website live in the background.</span></p><p><br></p><p><span style=\"font-family: Helvetica; font-size: 14px;\">However I recently became unemployed (self employed, it depends who's asking) and when I saw the notification come through on my email that I was nearly up for annual renewal, suddenly sending £155 out into the void didn't feel like such a good idea. So fresh with the enthusiasm that saving a bit of cash will give you, I set about trying to understand - is it actually that hard to make a website?</span></p><p><br></p><p><span style=\"font-family: Helvetica; font-size: 14px;\">The short answer is no. The long answer is how long is a piece of string.</span></p><p><br></p><p><span style=\"font-family: Helvetica; font-size: 14px;\">I've made all sorts of apps and enterprise platforms and done lots of data science work before in my day job so am pretty technically comfortable, and with Claude as my trusty sidekick I set about understanding the web dev landscape. I will admit I have the bare minimum understanding of how web development works and there are millions of individuals who could do what I have done here much better (good to get the caveats out of the way early), but here is how I made my simple portfolio site for FREE!&nbsp;</span></p><p><br></p><p><strong style=\"font-family: Helvetica; font-size: 14px;\"><u>1. Part 1 was to Get a Domain</u></strong></p><p><span style=\"font-family: Helvetica; font-size: 14px;\">I fortunately already had my domain and the annual cost for my name is pretty cheap (+ the .me suffix seems to always bring costs down). The price GoDaddy were charging me for this was pretty reasonable so it wasn’t worth looking at moving it to another registrar (you win this round GoDaddy). So find your domain and get it bought.&nbsp;</span></p><p><br></p><p><strong style=\"font-family: Helvetica; font-size: 14px;\"><u>2. Part 2 was to Make the website</u></strong></p><p><strong style=\"font-family: Helvetica; font-size: 14px;\">2.1</strong><span style=\"font-family: Helvetica; font-size: 14px;\"> Simple websites are pretty simple</span></p><p><span style=\"font-family: Helvetica; font-size: 14px;\">You don't need much for a simple website (i.e. if you have a website that just shows people stuff on a page). Once you start adding in memory of user interactions, awareness of visitors, interactions that work robustly, complex media formats, things can get a little more tricky.&nbsp;</span></p><p><span style=\"font-family: Helvetica; font-size: 14px;\">But a simple website is just some code that shows the user the right text or media, and then you tell it how to display it. In old school web dev this means some HTML telling the site what is on it, some CSS to define how the stuff on the page looks, and some JavaScript to define interactions or any moving bits.&nbsp;</span></p><p><br></p><p><strong style=\"font-family: Helvetica; font-size: 14px;\">2.2 </strong><span style=\"font-family: Helvetica; font-size: 14px;\">Dust off the code editor</span></p><p><span style=\"font-family: Helvetica; font-size: 14px;\">I pulled out VSCode and created the necessary HTML, CSS and JS files for my website (thanks to Claude for doing lots of the heavy lifting here). I knew my site wouldn’t be that complicated and had a clear plan for the architecture: A home page with an about section, a projects page, and a contact page. I knew I wanted a header and footer that were consistent between pages. All in all, I don’t think this was more than about 13 files in total.&nbsp;</span></p><p><br></p><p><strong style=\"font-family: Helvetica; font-size: 14px;\">2.3</strong><span style=\"font-family: Helvetica; font-size: 14px;\"> Test as you go</span></p><p><span style=\"font-family: Helvetica; font-size: 14px;\">I was able to work pretty quickly to get the website looking how I wanted as running HTML and CSS files locally in your browser is super easy - this meant I had some super speedy feedback loops going on - and LLMs are really good when it comes to writing CSS, which would have probably been the most time-consuming part of the site dev.&nbsp;</span></p><p><br></p><p><strong style=\"font-family: Helvetica; font-size: 14px;\">2.4 </strong><span style=\"font-family: Helvetica; font-size: 14px;\">Add some fun</span></p><p><span style=\"font-family: Helvetica; font-size: 14px;\">I wanted a quirk in the site - I’d seen lots of these examples of old-head devs doing their personal sites in pure html with no styling and thought that was fun. I loved the idea and thought a certain crowd would really appreciate that, however I also didn’t want to commit to the bit fully - some stuff like my projects posts and contact form would not look good in that format. Hence I created the landing page for the site which lets the user choose whether they want to view the ‘Old School’ version of the site or just view the normal site.&nbsp;</span></p><p><br></p><p><strong style=\"font-family: Helvetica; font-size: 14px;\"><u>3. Part 3 was to Host the Website</u></strong></p><p><span style=\"font-family: Helvetica; font-size: 14px;\">There are a whole bunch of ways you can host your website (including on your own physical server lol) at varying price points, depending on the additional services you need. The purpose of this project was to get costs down as much as possible because of the lack of the need for any services - so I researched some of ways you can do it for free. I didn’t look into them all, because I knew GitHub pages would be a pretty suitable option, and as a GitHub fan, it was an obvious pick. With GitHub pages it was as simple as creating a code repository, dumping in the code I had created and turning my Pages site on.</span></p><p><br></p><p><strong style=\"font-family: Helvetica; font-size: 14px;\"><u>4. Part 4 was to Link the Website to the Domain</u></strong></p><p><br></p><p><strong style=\"font-family: Helvetica; font-size: 14px;\"><u>5. Part 5 was Version Control</u></strong></p><p><br></p><p><strong style=\"font-family: Helvetica; font-size: 14px;\"><u>6. Part 6 was making it a site that can do more…</u></strong></p>",
+    "created": "2025-03-25T08:09:36.866Z",
+    "updated": "2025-03-27T05:23:21.992Z"
+  },
+  {
+    "id": "6",
+    "title": "Building a Digital Presence for Maia's Business",
+    "tags": "Web Development, Development",
+    "image": "",
+    "description": "",
     "content": "",
-    "created": "2025-03-25T08:09:36.866Z"
+    "created": "2025-03-27T04:31:43.086Z"
+  },
+  {
+    "id": "7",
+    "title": "Creating a Digital Travel Budget Planner",
+    "tags": "Tracker, Google Sheets",
+    "image": "",
+    "description": "",
+    "content": "",
+    "created": "2025-03-27T04:32:36.369Z"
+  },
+  {
+    "id": "8",
+    "title": "Building a bot to day-trade memecoins for real passive income",
+    "tags": "Crypto, Python, Development, APIs",
+    "image": "",
+    "description": "",
+    "content": "",
+    "created": "2025-03-27T04:33:26.953Z"
+  },
+  {
+    "id": "9",
+    "title": "Building a portfolio for my photography",
+    "tags": "Photography, Web Development, Development, Vercel",
+    "image": "",
+    "description": "",
+    "content": "",
+    "created": "2025-03-27T04:34:46.670Z",
+    "updated": "2025-03-27T04:35:16.303Z"
   }
 ]
