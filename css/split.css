@@ -42,7 +42,10 @@ body {
 
 .split.right {
     right: 0;
-    background: var(--bg-color);
+    background: url('../images/new_school.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
 }
 
 .split.left::before {
