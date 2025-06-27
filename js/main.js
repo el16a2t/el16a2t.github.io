@@ -1,6 +1,6 @@
 /**
  * Adam Thompson Portfolio
- * Main JavaScript
+ * Main JavaScript - Updated for Dark Theme with Ramblings
  */
 
 // Constants for security
@@ -29,24 +29,48 @@ function saveProjectsData(projects) {
     localStorage.setItem('portfolioProjects', JSON.stringify(projects));
 }
 
+// New functions for Ramblings
+function getRamblingsData() {
+    const ramblingsJson = localStorage.getItem('portfolioRamblings');
+    return ramblingsJson ? JSON.parse(ramblingsJson) : [];
+}
+
+function saveRamblingsData(ramblings) {
+    localStorage.setItem('portfolioRamblings', JSON.stringify(ramblings));
+}
+
+// Determine current page type
+function getCurrentPageType() {
+    const path = window.location.pathname;
+    if (path.includes('ramblings')) return 'ramblings';
+    if (path.includes('projects')) return 'projects';
+    return null;
+}
+
+// Generic data functions that work for both projects and ramblings
+function getItemsData(type) {
+    return type === 'ramblings' ? getRamblingsData() : getProjectsData();
+}
+
+function saveItemsData(items, type) {
+    if (type === 'ramblings') {
+        saveRamblingsData(items);
+    } else {
+        saveProjectsData(items);
+    }
+}
+
 // Admin Functions
 function validateAdminLogin() {
     const passwordInput = document.getElementById('admin-password');
     const errorMsg = document.getElementById('admin-error');
     
-    // Hash the entered password with the salt
     const saltedPassword = passwordInput.value + SITE_SALT;
     const hashedInput = CryptoJS.SHA256(saltedPassword).toString();
     
-    // Compare the hashed input with the stored hash
     if (hashedInput === ADMIN_HASH) {
-        // Set admin session
         sessionStorage.setItem('adminMode', 'active');
-        
-        // Close modal
         document.getElementById('admin-modal').style.display = 'none';
-        
-        // Refresh to show admin controls
         location.reload();
     } else {
         errorMsg.textContent = 'Invalid password';
@@ -55,7 +79,6 @@ function validateAdminLogin() {
 }
 
 function showAdminLoginModal() {
-    // Create modal elements if they don't exist
     if (!document.getElementById('admin-modal')) {
         const modal = document.createElement('div');
         modal.id = 'admin-modal';
@@ -67,8 +90,8 @@ function showAdminLoginModal() {
                 <h3>Admin Login</h3>
                 <div class="admin-form">
                     <label for="admin-password">Password</label>
-                    <input type="password" id="admin-password" class="admin-password">
-                    <button id="admin-login-btn" class="admin-login-btn">Login</button>
+                    <input type="password" id="admin-password" class="form-input admin-password">
+                    <button id="admin-login-btn" class="submit-btn admin-login-btn">Login</button>
                     <p id="admin-error" class="admin-error"></p>
                 </div>
             </div>
@@ -76,18 +99,14 @@ function showAdminLoginModal() {
         
         document.body.appendChild(modal);
         
-        // Add event listeners for modal
         const closeBtn = document.querySelector('.admin-modal-close');
         closeBtn.addEventListener('click', function() {
             modal.style.display = 'none';
         });
         
         const loginBtn = document.getElementById('admin-login-btn');
-        loginBtn.addEventListener('click', function() {
-            validateAdminLogin();
-        });
+        loginBtn.addEventListener('click', validateAdminLogin);
         
-        // Allow Enter key to submit
         const passwordInput = document.getElementById('admin-password');
         passwordInput.addEventListener('keyup', function(event) {
             if (event.key === 'Enter') {
@@ -96,11 +115,13 @@ function showAdminLoginModal() {
         });
     }
     
-    // Show the modal
     document.getElementById('admin-modal').style.display = 'block';
 }
 
 function addAdminControls() {
+    const pageType = getCurrentPageType();
+    if (!pageType) return;
+    
     // Show admin mode indicator
     const adminIndicator = document.createElement('div');
     adminIndicator.className = 'admin-mode-indicator';
@@ -110,133 +131,124 @@ function addAdminControls() {
     `;
     document.body.appendChild(adminIndicator);
     
-    // Add logout functionality
     document.getElementById('admin-logout').addEventListener('click', function() {
         sessionStorage.removeItem('adminMode');
         location.reload();
     });
     
-    // Get projects header
-    const projectsHeader = document.querySelector('.projects-header');
-    if (!projectsHeader) {
-        console.error('Projects header not found');
-        return;
-    }
-    
-    // Add "New Project" button
-    const newProjectBtn = document.createElement('button');
-    newProjectBtn.className = 'btn btn-new-project';
-    newProjectBtn.textContent = 'Add New Project';
-    newProjectBtn.style.marginTop = '20px';
-    projectsHeader.appendChild(newProjectBtn);
-    
-    // Add "Export Projects" button with extra visibility
+    // Add export button for both projects and ramblings
     const exportBtn = document.createElement('button');
-    exportBtn.className = 'btn btn-export-projects';
-    exportBtn.textContent = 'Export Projects';
+    exportBtn.className = 'btn btn-export-items';
+    exportBtn.textContent = `Export ${pageType === 'ramblings' ? 'Ramblings' : 'Projects'}`;
     exportBtn.style.marginTop = '20px';
     exportBtn.style.marginLeft = '10px';
-    exportBtn.style.backgroundColor = '#ff5722'; // Bright orange
+    exportBtn.style.backgroundColor = '#ff5722';
     exportBtn.style.color = 'white';
     exportBtn.style.fontWeight = 'bold';
-    projectsHeader.appendChild(exportBtn);
     
-    // New Project button event listener
-    newProjectBtn.addEventListener('click', function() {
-        showProjectModal('new');
+    // Get page header based on page type
+    const pageHeader = document.querySelector('.page-header');
+    if (!pageHeader) return;
+    
+    // Add "New Item" button
+    const newItemBtn = document.createElement('button');
+    newItemBtn.className = 'btn btn-new-item';
+    newItemBtn.textContent = pageType === 'ramblings' ? 'Add New Post' : 'Add New Project';
+    newItemBtn.style.marginTop = '20px';
+    pageHeader.appendChild(newItemBtn);
+    pageHeader.appendChild(exportBtn);
+    
+    newItemBtn.addEventListener('click', function() {
+        showItemModal('new', {}, pageType);
     });
     
-    // Export Projects button event listener
     exportBtn.addEventListener('click', function() {
-        exportProjectsToJSON();
-        alert('Projects exported! Upload the downloaded file to your GitHub repository.');
+        exportItemsToJSON(pageType);
+        alert(`${pageType === 'ramblings' ? 'Ramblings' : 'Projects'} exported! Upload the downloaded file to your GitHub repository.`);
     });
     
-    // Add edit buttons to each project card
-    const projectCards = document.querySelectorAll('.project-card');
-    projectCards.forEach(card => {
+    // Add edit buttons to each item card
+    const itemCards = document.querySelectorAll('.item-card');
+    itemCards.forEach(card => {
         const editBtn = document.createElement('button');
-        editBtn.className = 'project-edit-btn';
+        editBtn.className = 'item-edit-btn';
         editBtn.innerHTML = '<i class="fas fa-edit"></i>';
         card.appendChild(editBtn);
         
-        // Add edit event listener
         editBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            const projectId = card.getAttribute('data-id');
-            editProject(projectId);
+            const itemId = card.getAttribute('data-id');
+            editItem(itemId, pageType);
         });
     });
 }
 
-// Projects Management Functions
-function createNewProject() {
-    showProjectModal('new');
-}
-
-function editProject(projectId) {
-    const projects = getProjectsData();
-    const project = projects.find(p => p.id.toString() === projectId.toString());
+// Item Management Functions (works for both projects and ramblings)
+function editItem(itemId, type) {
+    const items = getItemsData(type);
+    const item = items.find(i => i.id.toString() === itemId.toString());
     
-    if (project) {
-        showProjectModal('edit', project);
+    if (item) {
+        showItemModal('edit', item, type);
     } else {
-        alert('Project not found');
+        alert(`${type === 'ramblings' ? 'Post' : 'Project'} not found`);
     }
 }
 
-function showProjectModal(mode, projectData = {}) {
-    // Remove any existing modal
-    const existingModal = document.getElementById('project-modal');
+function showItemModal(mode, itemData = {}, type) {
+    const existingModal = document.getElementById('item-modal');
     if (existingModal) {
         existingModal.remove();
     }
     
-    // Create modal
     const modal = document.createElement('div');
-    modal.id = 'project-modal';
+    modal.id = 'item-modal';
     modal.className = 'admin-modal';
     
-    // Prepare modal content based on mode (edit or new)
-    const title = mode === 'edit' ? 'Edit Project' : 'New Project';
-    const submitBtnText = mode === 'edit' ? 'Update Project' : 'Create Project';
+    const title = mode === 'edit' 
+        ? `Edit ${type === 'ramblings' ? 'Post' : 'Project'}` 
+        : `New ${type === 'ramblings' ? 'Post' : 'Project'}`;
+    const submitBtnText = mode === 'edit' 
+        ? `Update ${type === 'ramblings' ? 'Post' : 'Project'}` 
+        : `Create ${type === 'ramblings' ? 'Post' : 'Project'}`;
     
     modal.innerHTML = `
         <div class="admin-modal-content project-modal-content">
             <span class="admin-modal-close">&times;</span>
             <h3>${title}</h3>
-            <form id="project-form" class="project-form">
+            <form id="item-form" class="project-form">
                 <div class="form-group">
-                    <label for="project-title">Project Title</label>
-                    <input type="text" id="project-title" class="form-input" value="${projectData.title || ''}" required>
+                    <label for="item-title">${type === 'ramblings' ? 'Post' : 'Project'} Title</label>
+                    <input type="text" id="item-title" class="form-input" value="${itemData.title || ''}" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="project-tags">Tags (comma separated)</label>
-                    <input type="text" id="project-tags" class="form-input" value="${projectData.tags || ''}" required>
+                    <label for="item-tags">Tags (comma separated)</label>
+                    <input type="text" id="item-tags" class="form-input" value="${itemData.tags || ''}" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="project-image">Image URL</label>
-                    <input type="text" id="project-image" class="form-input" value="${projectData.image || ''}">
+                    <label for="item-image">Image URL</label>
+                    <input type="text" id="item-image" class="form-input" value="${itemData.image || ''}">
                 </div>
                 
                 <div class="form-group">
-                    <label for="project-description">Short Description</label>
-                    <textarea id="project-description" class="form-textarea">${projectData.description || ''}</textarea>
+                    <label for="item-description">Short Description</label>
+                    <textarea id="item-description" class="form-textarea">${itemData.description || ''}</textarea>
                 </div>
                 
                 <div class="form-group">
-                    <label for="project-content">Full Content (HTML)</label>
-                    <textarea id="project-content" class="form-textarea" rows="10">${projectData.content || ''}</textarea>
+                    <label for="item-content">Full Content (HTML)</label>
+                    <textarea id="item-content" class="form-textarea" rows="10">${itemData.content || ''}</textarea>
                 </div>
                 
-                <input type="hidden" id="project-id" value="${projectData.id || ''}">
+                <input type="hidden" id="item-id" value="${itemData.id || ''}">
+                <input type="hidden" id="item-type" value="${type}">
                 
                 <div class="form-actions">
                     <button type="submit" class="submit-btn">${submitBtnText}</button>
-                    ${mode === 'edit' ? '<button type="button" id="delete-project-btn" class="delete-btn">Delete Project</button>' : ''}
+                    ${mode === 'edit' ? '<button type="button" id="delete-item-btn" class="delete-btn">Delete</button>' : ''}
                 </div>
             </form>
         </div>
@@ -244,278 +256,239 @@ function showProjectModal(mode, projectData = {}) {
     
     document.body.appendChild(modal);
     
-    // Add event listener for close button
     const closeBtn = modal.querySelector('.admin-modal-close');
     closeBtn.addEventListener('click', function() {
         modal.style.display = 'none';
     });
     
-    // Add event listener for form submission
-    const projectForm = document.getElementById('project-form');
-    projectForm.addEventListener('submit', function(e) {
+    const itemForm = document.getElementById('item-form');
+    itemForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
         if (mode === 'edit') {
-            saveProjectChanges();
+            saveItemChanges();
         } else {
-            saveNewProject();
+            saveNewItem();
         }
     });
     
-    // Add event listener for delete button if in edit mode
     if (mode === 'edit') {
-        const deleteBtn = document.getElementById('delete-project-btn');
+        const deleteBtn = document.getElementById('delete-item-btn');
         deleteBtn.addEventListener('click', function(e) {
             e.preventDefault();
             
-            if (confirm('Are you sure you want to delete this project? This cannot be undone.')) {
-                deleteProject(projectData.id);
+            if (confirm(`Are you sure you want to delete this ${type === 'ramblings' ? 'post' : 'project'}? This cannot be undone.`)) {
+                deleteItem(itemData.id, type);
             }
         });
     }
     
-    // Show the modal
     modal.style.display = 'block';
 }
 
-function saveNewProject() {
-    const projectTitle = document.getElementById('project-title').value;
-    const projectTags = document.getElementById('project-tags').value;
-    const projectImage = document.getElementById('project-image').value;
-    const projectDescription = document.getElementById('project-description').value;
-    const projectContent = document.getElementById('project-content').value;
+function saveNewItem() {
+    const itemTitle = document.getElementById('item-title').value;
+    const itemTags = document.getElementById('item-tags').value;
+    const itemImage = document.getElementById('item-image').value;
+    const itemDescription = document.getElementById('item-description').value;
+    const itemContent = document.getElementById('item-content').value;
+    const itemType = document.getElementById('item-type').value;
     
-    if (!projectTitle || !projectTags) {
+    if (!itemTitle || !itemTags) {
         alert('Please fill out all required fields');
         return;
     }
     
-    // Get projects and generate a new ID
-    const projects = getProjectsData();
-    const newId = projects.length > 0 ? Math.max(...projects.map(p => parseInt(p.id))) + 1 : 1;
+    const items = getItemsData(itemType);
+    const newId = items.length > 0 ? Math.max(...items.map(i => parseInt(i.id))) + 1 : 1;
     
-    // Create new project object
-    const newProject = {
+    const newItem = {
         id: newId.toString(),
-        title: projectTitle,
-        tags: projectTags,
-        image: projectImage, // This is now optional
-        description: projectDescription,
-        content: projectContent,
+        title: itemTitle,
+        tags: itemTags,
+        image: itemImage,
+        description: itemDescription,
+        content: itemContent,
         created: new Date().toISOString()
     };
     
-    // Add to projects array
-    projects.push(newProject);
+    items.push(newItem);
+    saveItemsData(items, itemType);
     
-    // Save to localStorage
-    saveProjectsData(projects);
+    document.getElementById('item-modal').style.display = 'none';
+    loadItems(itemType);
     
-    // Close modal
-    document.getElementById('project-modal').style.display = 'none';
-    
-    // Reload projects
-    loadProjects();
-    
-    // Show success message
-    alert('Project created successfully!');
+    alert(`${itemType === 'ramblings' ? 'Post' : 'Project'} created successfully!`);
 }
 
-function saveProjectChanges() {
-    const projectId = document.getElementById('project-id').value;
-    const projectTitle = document.getElementById('project-title').value;
-    const projectTags = document.getElementById('project-tags').value;
-    const projectImage = document.getElementById('project-image').value;
-    const projectDescription = document.getElementById('project-description').value;
-    const projectContent = document.getElementById('project-content').value;
+function saveItemChanges() {
+    const itemId = document.getElementById('item-id').value;
+    const itemTitle = document.getElementById('item-title').value;
+    const itemTags = document.getElementById('item-tags').value;
+    const itemImage = document.getElementById('item-image').value;
+    const itemDescription = document.getElementById('item-description').value;
+    const itemContent = document.getElementById('item-content').value;
+    const itemType = document.getElementById('item-type').value;
     
-    if (!projectTitle || !projectTags) {
+    if (!itemTitle || !itemTags) {
         alert('Please fill out all required fields');
         return;
     }
     
-    // Get all projects
-    const projects = getProjectsData();
+    const items = getItemsData(itemType);
+    const itemIndex = items.findIndex(i => i.id.toString() === itemId.toString());
     
-    // Find the project to update
-    const projectIndex = projects.findIndex(p => p.id.toString() === projectId.toString());
-    
-    if (projectIndex === -1) {
-        alert('Project not found');
+    if (itemIndex === -1) {
+        alert(`${itemType === 'ramblings' ? 'Post' : 'Project'} not found`);
         return;
     }
     
-    // Update project data
-    projects[projectIndex] = {
-        ...projects[projectIndex],
-        title: projectTitle,
-        tags: projectTags,
-        image: projectImage,
-        description: projectDescription,
-        content: projectContent,
+    items[itemIndex] = {
+        ...items[itemIndex],
+        title: itemTitle,
+        tags: itemTags,
+        image: itemImage,
+        description: itemDescription,
+        content: itemContent,
         updated: new Date().toISOString()
     };
     
-    // Save to localStorage
-    saveProjectsData(projects);
+    saveItemsData(items, itemType);
+    document.getElementById('item-modal').style.display = 'none';
+    loadItems(itemType);
     
-    // Close modal
-    document.getElementById('project-modal').style.display = 'none';
-    
-    // Reload projects
-    loadProjects();
-    
-    // Show success message
-    alert('Project updated successfully!');
+    alert(`${itemType === 'ramblings' ? 'Post' : 'Project'} updated successfully!`);
 }
 
-function deleteProject(projectId) {
-    // Get all projects
-    const projects = getProjectsData();
+function deleteItem(itemId, type) {
+    const items = getItemsData(type);
+    const updatedItems = items.filter(i => i.id.toString() !== itemId.toString());
     
-    // Filter out the project to delete
-    const updatedProjects = projects.filter(p => p.id.toString() !== projectId.toString());
+    saveItemsData(updatedItems, type);
+    document.getElementById('item-modal').style.display = 'none';
+    loadItems(type);
     
-    // Save to localStorage
-    saveProjectsData(updatedProjects);
-    
-    // Close modal
-    document.getElementById('project-modal').style.display = 'none';
-    
-    // Reload projects
-    loadProjects();
-    
-    // Show success message
-    alert('Project deleted successfully!');
+    alert(`${type === 'ramblings' ? 'Post' : 'Project'} deleted successfully!`);
 }
 
-function loadProjects() {
-    const projectsGrid = document.getElementById('projects-grid');
-    if (!projectsGrid) return;
+function loadItems(type) {
+    const gridId = type === 'ramblings' ? 'ramblings-grid' : 'projects-grid';
+    const itemsGrid = document.getElementById(gridId);
+    if (!itemsGrid) return;
     
-    const projects = getProjectsData();
+    const items = getItemsData(type);
     
-    // Clear the grid
-    projectsGrid.innerHTML = '';
+    itemsGrid.innerHTML = '';
     
-    // If no projects, show a message
-    if (projects.length === 0) {
-        projectsGrid.innerHTML = '<div style="text-align: center; padding: 50px;">No projects found. Add your first project!</div>';
+    if (items.length === 0) {
+        itemsGrid.innerHTML = `<div class="no-items">No ${type === 'ramblings' ? 'posts' : 'projects'} found. Add your first one!</div>`;
         return;
     }
     
-    // Add each project to the grid
-    projects.forEach(project => {
-        // Convert tags string to data-tags attribute format
-        const tagsList = project.tags.split(',').map(tag => tag.trim().toLowerCase()).join(',');
+    items.forEach(item => {
+        const tagsList = item.tags.split(',').map(tag => tag.trim().toLowerCase()).join(',');
         
-        const projectHTML = `
-        <div class="project-card" data-tags="${tagsList}" data-id="${project.id}">
-            <a href="javascript:void(0)" onclick="viewProject(${project.id})" class="project-link">
-                <div class="project-image">
-                <img src="${project.image || 'images/placeholder.jpg'}" alt="${project.title}">
-                </div>
-                <div class="project-info">
-                    <h3 class="project-title">${project.title}</h3>
-                    <div class="project-tags-container">
-                    ${project.tags.split(',').map(tag => 
-                    `<span class="project-tag">${tag.trim()}</span>`
-                    ).join('')}
+        const itemHTML = `
+            <div class="item-card" data-tags="${tagsList}" data-id="${item.id}">
+                <a href="javascript:void(0)" onclick="viewItem(${item.id}, '${type}')" class="item-link">
+                    <div class="item-thumbnail">
+                        ${item.image ? `<img src="${item.image}" alt="${item.title}">` : `[${type === 'ramblings' ? 'Post' : 'Project'} Image]`}
                     </div>
-                </div>
-            </a>
-            ${isAdminMode() ? '<button class="project-edit-btn"><i class="fas fa-edit"></i></button>' : ''}
-        </div>
-`;
+                    <div class="item-info">
+                        <h3 class="item-title">${item.title}</h3>
+                        <div class="item-tags">
+                            ${item.tags.split(',').map(tag => 
+                                `<span class="tag">${tag.trim()}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                </a>
+                ${isAdminMode() ? '<button class="item-edit-btn"><i class="fas fa-edit"></i></button>' : ''}
+            </div>
+        `;
         
         const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = projectHTML;
-        const projectCard = tempDiv.firstElementChild;
+        tempDiv.innerHTML = itemHTML;
+        const itemCard = tempDiv.firstElementChild;
         
-        // Add edit button event listener if in admin mode
         if (isAdminMode()) {
-            const editBtn = projectCard.querySelector('.project-edit-btn');
+            const editBtn = itemCard.querySelector('.item-edit-btn');
             editBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                editProject(project.id);
+                editItem(item.id, type);
             });
         }
         
-        projectsGrid.appendChild(projectCard);
+        itemsGrid.appendChild(itemCard);
     });
     
-    // Reinitialize project filters
-    initializeFilters();
+    initializeFilters(type);
 }
 
-function viewProject(projectId) {
-    const projects = getProjectsData();
-    const project = projects.find(p => p.id.toString() === projectId.toString());
+function viewItem(itemId, type) {
+    const items = getItemsData(type);
+    const item = items.find(i => i.id.toString() === itemId.toString());
     
-    if (!project) {
-        alert('Project not found');
+    if (!item) {
+        alert(`${type === 'ramblings' ? 'Post' : 'Project'} not found`);
         return;
     }
     
-    // Store current view in session
-    sessionStorage.setItem('currentProject', JSON.stringify(project));
-    
-    // Navigate to project view page
-    window.location.href = 'view-project.html';
+    sessionStorage.setItem('currentItem', JSON.stringify({...item, type}));
+    window.location.href = `view-${type === 'ramblings' ? 'post' : 'project'}.html`;
 }
 
-function loadProjectDetails() {
-    const projectJson = sessionStorage.getItem('currentProject');
+function loadItemDetails() {
+    const itemJson = sessionStorage.getItem('currentItem');
     
-    if (!projectJson) {
-        window.location.href = 'projects.html';
+    if (!itemJson) {
+        window.location.href = 'home.html';
         return;
     }
     
-    const project = JSON.parse(projectJson);
+    const item = JSON.parse(itemJson);
     const container = document.getElementById('project-container');
     
-    // Set page title
-    document.title = `${project.title} | Adam Thompson`;
+    document.title = `${item.title} | Adam Thompson`;
     
-    // Populate project content
     container.innerHTML = `
-    <h1 class="project-title">${project.title}</h1>
-    <div class="project-meta">
-        <div class="project-tags">
-            ${project.tags.split(',').map(tag => 
-                `<span class="project-tag">${tag.trim()}</span>`
-            ).join('')}
+        <div class="detail-header">
+            <h1 class="detail-title">${item.title}</h1>
+            <div class="detail-meta">
+                <span>Published ${new Date(item.created).toLocaleDateString()}</span>
+                ${item.updated ? `<span>Updated ${new Date(item.updated).toLocaleDateString()}</span>` : ''}
+            </div>
+            <div class="detail-tags">
+                ${item.tags.split(',').map(tag => 
+                    `<span class="tag">${tag.trim()}</span>`
+                ).join('')}
+            </div>
         </div>
-    </div>
 
-    ${project.image ? `
-    <div class="project-main-image">
-        <img src="${project.image}" alt="${project.title}">
-    </div>
-    ` : ''}
+        ${item.image ? `
+        <div class="detail-image">
+            <img src="${item.image}" alt="${item.title}">
+        </div>
+        ` : ''}
 
-    <div class="project-description">
-        ${project.description || ''}
-    </div>
+        <div class="detail-content">
+            ${item.description ? `<p class="detail-description">${item.description}</p>` : ''}
+            ${item.content || ''}
+        </div>
 
-    <div class="project-full-content">
-        ${project.content || ''}
-    </div>
-
-    <div class="project-nav">
-        <a href="projects.html" class="btn">&larr; Back to Projects</a>
-    </div>
+        <div class="detail-nav">
+            <a href="${item.type === 'ramblings' ? 'ramblings' : 'projects'}.html" class="btn">&larr; Back to ${item.type === 'ramblings' ? 'Posts' : 'Projects'}</a>
+        </div>
     `;
 }
 
-function exportProjectsToJSON() {
-    const projects = getProjectsData();
-    const dataStr = JSON.stringify(projects, null, 2);
+function exportItemsToJSON(type) {
+    const items = getItemsData(type);
+    const dataStr = JSON.stringify(items, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
     
-    const exportFileDefaultName = 'projects.json';
+    const exportFileDefaultName = `${type}.json`;
     
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
@@ -523,8 +496,8 @@ function exportProjectsToJSON() {
     linkElement.click();
 }
 
-function loadProjectsFromJSON(url) {
-    fetch(url + '?t=' + new Date().getTime()) // Add cache-busting parameter
+function loadItemsFromJSON(url, type) {
+    fetch(url + '?t=' + new Date().getTime())
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -532,36 +505,29 @@ function loadProjectsFromJSON(url) {
             return response.json();
         })
         .then(data => {
-            // Save fetched projects to localStorage
-            saveProjectsData(data);
-            // Reload projects display
-            loadProjects();
+            saveItemsData(data, type);
+            loadItems(type);
         })
         .catch(error => {
-            console.log('Error loading projects.json, falling back to localStorage:', error);
-            // If fetch fails, just load from localStorage
-            loadProjects();
+            console.log(`Error loading ${type}.json, falling back to localStorage:`, error);
+            loadItems(type);
         });
 }
 
 // Filter Functions
-function initializeFilters() {
+function initializeFilters(type) {
     const filterBtns = document.querySelectorAll('.filter-btn');
-    const projectCards = document.querySelectorAll('.project-card');
+    const itemCards = document.querySelectorAll('.item-card');
     
     if (filterBtns.length > 0) {
         filterBtns.forEach(btn => {
             btn.addEventListener('click', function() {
-                // Remove active class from all buttons
                 filterBtns.forEach(b => b.classList.remove('active'));
-                
-                // Add active class to clicked button
                 this.classList.add('active');
                 
                 const filter = this.getAttribute('data-filter');
                 
-                // Filter projects
-                projectCards.forEach(card => {
+                itemCards.forEach(card => {
                     const tags = card.getAttribute('data-tags');
                     
                     if (filter === 'all' || tags.includes(filter)) {
@@ -583,232 +549,37 @@ function initializeFilters() {
     }
 }
 
-// Styling Functions
-function addProjectModalStyles() {
-    const style = document.createElement('style');
-    style.textContent = `
-        .admin-modal {
-            display: none;
-            position: fixed;
-            z-index: 1001;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            overflow-y: auto;
-        }
-        
-        .admin-modal-content {
-            background-color: white;
-            margin: 5vh auto;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-            width: 90%;
-            max-width: 800px;
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        .project-modal-content {
-            max-width: 800px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        .admin-modal-close {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 24px;
-            cursor: pointer;
-        }
-        
-        .admin-modal-content h3 {
-            margin-bottom: 20px;
-            font-family: 'Space Grotesk', sans-serif;
-        }
-        
-        .admin-form label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: 500;
-        }
-        
-        .admin-password {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border: 1px solid var(--medium-gray);
-            font-size: 16px;
-        }
-        
-        .admin-login-btn {
-            background-color: var(--black);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        
-        .admin-login-btn:hover {
-            opacity: 0.8;
-        }
-        
-        .admin-error {
-            color: #d32f2f;
-            margin-top: 15px;
-            font-size: 14px;
-        }
-        
-        .admin-mode-indicator {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: var(--black);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 4px;
-            font-size: 14px;
-            z-index: 999;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .admin-mode-indicator button {
-            background: none;
-            border: none;
-            color: white;
-            text-decoration: underline;
-            cursor: pointer;
-            padding: 0;
-            font-size: 14px;
-        }
-        
-        .project-form .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .project-form .form-textarea {
-            min-height: 120px;
-        }
-        
-        .project-edit-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 10;
-            opacity: 0.7;
-            transition: var(--transition);
-        }
-        
-        .project-edit-btn:hover {
-            opacity: 1;
-            transform: scale(1.1);
-        }
-        
-        .btn-new-project {
-            margin-left: auto;
-            margin-right: auto;
-            display: block;
-        }
-        
-        .form-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-        }
-        
-        .delete-btn {
-            background-color: #d32f2f;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        
-        .delete-btn:hover {
-            opacity: 0.8;
-        }
-        
-        .submit-btn {
-            position: sticky;
-            bottom: 0;
-            background-color: var(--black);
-            margin-top: 20px;
-        }
-        
-        .project-form {
-            padding-bottom: 20px;
-        }
-        
-        /* Tag styling */
-        .project-tags-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        
-        .project-tag {
-            background-color: #f0f0f0;
-            border-radius: 16px;
-            padding: 4px 12px;
-            font-size: 0.8rem;
-            color: var(--dark-gray);
-            transition: var(--transition);
-        }
-        
-        .project-tag:hover {
-            background-color: #e0e0e0;
-            transform: translateY(-2px);
-        }
-    `;
-    document.head.appendChild(style);
+// Search Functions
+function initializeSearch(type) {
+    const searchId = type === 'ramblings' ? 'rambling-search' : 'project-search';
+    const searchInput = document.getElementById(searchId);
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchValue = this.value.toLowerCase().trim();
+            const itemCards = document.querySelectorAll('.item-card');
+            
+            itemCards.forEach(card => {
+                const title = card.querySelector('.item-title').textContent.toLowerCase();
+                const tags = card.getAttribute('data-tags').toLowerCase();
+                
+                if (title.includes(searchValue) || tags.includes(searchValue)) {
+                    card.style.display = 'block';
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 10);
+                } else {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        card.style.display = 'none';
+                    }, 300);
+                }
+            });
+        });
+    }
 }
-
-// Main Initialization - Single DOMContentLoaded event
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("DOM loaded - initializing site functionality");
-    
-    // Initialize basic site functionality
-    initMobileMenu();
-    initHeaderScroll();
-    initProjectFiltering();
-    initContactForm();
-    initSmoothScroll();
-    initProjectImageHover();
-    initFadeAnimations();
-    
-    // Add styles
-    addProjectModalStyles();
-    
-    // Initialize admin functionality
-    initAdminFunctionality();
-    
-    // Initialize projects functionality
-    initProjectsFunctionality();
-});
 
 // Site Functionality Initializers
 function initMobileMenu() {
@@ -838,101 +609,6 @@ function initHeaderScroll() {
     }
 }
 
-function initProjectFiltering() {
-    const filterBtns = document.querySelectorAll('.filter-btn');
-    const projectCards = document.querySelectorAll('.project-card');
-    
-    if (filterBtns.length > 0) {
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                // Remove active class from all buttons
-                filterBtns.forEach(b => b.classList.remove('active'));
-                
-                // Add active class to clicked button
-                this.classList.add('active');
-                
-                const filter = this.getAttribute('data-filter');
-                
-                // Filter projects
-                projectCards.forEach(card => {
-                    const tags = card.getAttribute('data-tags');
-                    
-                    if (filter === 'all' || tags.includes(filter)) {
-                        card.style.display = 'block';
-                        setTimeout(() => {
-                            card.style.opacity = '1';
-                            card.style.transform = 'translateY(0)';
-                        }, 10);
-                    } else {
-                        card.style.opacity = '0';
-                        card.style.transform = 'translateY(20px)';
-                        setTimeout(() => {
-                            card.style.display = 'none';
-                        }, 300);
-                    }
-                });
-            });
-        });
-    }
-    
-    // Projects search
-    const searchInput = document.getElementById('project-search');
-    
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            const searchValue = this.value.toLowerCase().trim();
-            const projectCards = document.querySelectorAll('.project-card');
-            
-            projectCards.forEach(card => {
-                const title = card.querySelector('.project-title').textContent.toLowerCase();
-                const tags = card.getAttribute('data-tags').toLowerCase();
-                const description = card.querySelector('.project-description')
-                    ? card.querySelector('.project-description').textContent.toLowerCase()
-                    : '';
-                
-                if (title.includes(searchValue) || 
-                    tags.includes(searchValue) || 
-                    description.includes(searchValue)) {
-                    card.style.display = 'block';
-                    setTimeout(() => {
-                        card.style.opacity = '1';
-                        card.style.transform = 'translateY(0)';
-                    }, 10);
-                } else {
-                    card.style.opacity = '0';
-                    card.style.transform = 'translateY(20px)';
-                    setTimeout(() => {
-                        card.style.display = 'none';
-                    }, 300);
-                }
-            });
-        });
-    }
-}
-
-function initContactForm() {
-    const contactForm = document.getElementById('contact-form');
-    
-    if (contactForm) {
-        contactForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const message = document.getElementById('message').value;
-            
-            if (name && email && message) {
-                // Here you would typically send the form data to a server
-                // For demo purposes, we'll just show an alert
-                alert('Thanks for your message! I\'ll get back to you soon.');
-                contactForm.reset();
-            } else {
-                alert('Please fill out all required fields.');
-            }
-        });
-    }
-}
-
 function initSmoothScroll() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
@@ -954,28 +630,9 @@ function initSmoothScroll() {
     });
 }
 
-function initProjectImageHover() {
-    const projectImages = document.querySelectorAll('.project-card .project-image');
-    
-    projectImages.forEach(image => {
-        image.addEventListener('mouseenter', function() {
-            if (this.querySelector('img')) {
-                this.querySelector('img').style.transform = 'scale(1.05)';
-            }
-        });
-        
-        image.addEventListener('mouseleave', function() {
-            if (this.querySelector('img')) {
-                this.querySelector('img').style.transform = 'scale(1)';
-            }
-        });
-    });
-}
-
 function initFadeAnimations() {
     const animateElements = document.querySelectorAll('.project-section, .project-images, .hero-content, .hero-image, .about-content, .about-image');
     
-    // Function to add 'visible' class to elements in viewport
     function checkVisibility() {
         animateElements.forEach(element => {
             if (isInViewport(element)) {
@@ -984,14 +641,12 @@ function initFadeAnimations() {
         });
     }
     
-    // Set initial styles for animation
     animateElements.forEach(element => {
         element.style.opacity = '0';
         element.style.transform = 'translateY(20px)';
         element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
     });
     
-    // Add CSS rule for the 'visible' class
     const style = document.createElement('style');
     style.innerHTML = `
         .visible {
@@ -1001,7 +656,6 @@ function initFadeAnimations() {
     `;
     document.head.appendChild(style);
     
-    // Check element visibility on load and scroll
     window.addEventListener('load', checkVisibility);
     window.addEventListener('scroll', checkVisibility);
 }
@@ -1010,37 +664,51 @@ function initAdminFunctionality() {
     const adminTrigger = document.getElementById('admin-trigger');
     
     if (adminTrigger) {
-        console.log("Admin trigger found, adding click handler");
         adminTrigger.addEventListener('click', function() {
             showAdminLoginModal();
         });
     }
     
-    // Check if admin mode is active and we're on the projects page
     if (isAdminMode()) {
-        console.log("Admin mode detected");
-        const projectsGrid = document.getElementById('projects-grid');
-        
-        if (projectsGrid) {
-            console.log("Projects grid found, adding admin controls");
+        const pageType = getCurrentPageType();
+        if (pageType) {
             addAdminControls();
         }
     }
 }
 
-function initProjectsFunctionality() {
-    // Check if we're on the projects page
-    const projectsGrid = document.getElementById('projects-grid');
-    if (projectsGrid) {
-        console.log("Loading projects from JSON");
-        // First try to load from the remote JSON file
-        loadProjectsFromJSON('projects.json');
+function initPageFunctionality() {
+    const pageType = getCurrentPageType();
+    
+    if (pageType) {
+        // Load items from JSON or localStorage
+        loadItemsFromJSON(`${pageType}.json`, pageType);
+        
+        // Initialize search
+        initializeSearch(pageType);
     }
     
-    // Check if we're on the view-project page
+    // Check if we're on a detail page
     const projectContainer = document.getElementById('project-container');
     if (projectContainer) {
-        console.log("Loading project details");
-        loadProjectDetails();
+        loadItemDetails();
     }
 }
+
+// Main Initialization
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize basic site functionality
+    initMobileMenu();
+    initHeaderScroll();
+    initSmoothScroll();
+    initFadeAnimations();
+    
+    // Initialize admin functionality
+    initAdminFunctionality();
+    
+    // Initialize page-specific functionality
+    initPageFunctionality();
+});
+
+// Export functions for inline onclick handlers
+window.viewItem = viewItem;
