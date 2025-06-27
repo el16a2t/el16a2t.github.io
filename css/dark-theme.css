@@ -130,6 +130,45 @@ Gradient background if I want to switch back from using image
     padding: 2rem;
 }
 
+/* Projects/Ramblings specific layout for fixed viewport */
+.projects-page body,
+.ramblings-page body {
+    height: 100vh;
+    overflow: hidden;
+}
+
+.projects-page .main-container,
+.ramblings-page .main-container {
+    height: 100vh;
+}
+
+.projects-page .content,
+.ramblings-page .content {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: calc(100vh - 16vh); /* Subtract header and footer heights */
+}
+
+/* Ensure mobile still works normally */
+@media (max-width: 768px) {
+    .projects-page body,
+    .ramblings-page body {
+        height: auto;
+        overflow: visible;
+    }
+    
+    .projects-page .main-container,
+    .ramblings-page .main-container {
+        height: auto;
+    }
+    
+    .projects-page .content,
+    .ramblings-page .content {
+        overflow: visible;
+        height: auto;
+    }
+}
+
 /* Home page specific container */
 .home-page body {
     height: 100vh;
