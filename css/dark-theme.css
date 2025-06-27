@@ -430,6 +430,13 @@ Gradient background if I want to switch back from using image
     margin-top: 2.2rem;
 }
 
+.profile-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
 /* Folders */
 .folders-container {
     flex: 0 1 auto;
